@@ -118,7 +118,28 @@ void MainWindow::connectedToServer()
 
 void MainWindow::messageReceived(const QString &sender, const QString &text, const QString &target)
 {
+    QString timeStr = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    QString displayHtml;
 
+    if (!target.isEmpty()) {
+        // Private Message
+        QString relation;
+        QString myName = ui->nameEdit->text();
+        if (sender == myName) {
+            relation = QString("我→%1").arg(target);
+        } else {
+            relation = QString("%1→我").arg(sender);
+        }
+
+        displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
+                      .arg(timeStr, relation, text);
+    } else {
+        // Public Message
+        displayHtml = QString("<font color='black'>[公共][%1] %2：%3</font>")
+                      .arg(timeStr, sender, text);
+    }
+
+    ui->textEdit->append(displayHtml);
 }
 
 void MainWindow::jsonReceived(const QJsonObject &jsonObj)
