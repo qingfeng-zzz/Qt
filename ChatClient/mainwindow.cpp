@@ -92,21 +92,7 @@ void MainWindow::on_btJoin_clicked()
 
 void MainWindow::on_btSend_clicked()
 {
-    QString text = ui->messageEdit->text();
-    if (text.isEmpty()) return;
 
-    if (radioPrivate->isChecked()) {
-        QList<QListWidgetItem*> selected = ui->userList->selectedItems();
-        if (selected.isEmpty()) {
-             QMessageBox::warning(this, "提示", "请选择私聊对象！");
-             return;
-        }
-        QString target = selected.first()->text();
-        m_chatClient->sendMessage(text, "message", target);
-    } else {
-        m_chatClient->sendMessage(text, "message");
-    }
-    ui->messageEdit->clear();
 }
 
 void MainWindow::connectedToServer()
