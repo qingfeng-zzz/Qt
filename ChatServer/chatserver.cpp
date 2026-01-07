@@ -59,7 +59,26 @@ void ChatServer::jsonReceived(ServerWorker *sender, const QJsonObject &docObj)
         message["text"] = text;
         message["sender"] = sender->userName();
 
-        broadcast(message,sender);
+        const QJsonValue targetVal = docObj.value("target");
+        if (!targetVal.isNull() && targetVal.isString()) {
+            QString targetUser = targetVal.toString();
+            message["target"] = targetUser;
+            // Find target worker
+            for (ServerWorker *worker : m_clients) {
+                if (worker->userName() == targetUser) {
+                    worker->sendJson(message);
+                    // Also send back to sender so they see their own private message
+                    if (worker != sender) {
+                        sender->sendJson(message);
+                    }
+                    return;
+                }
+            }
+            // If target not found, maybe send error back to sender?
+            // For now, just ignore or maybe send back to sender only
+        } else {
+             broadcast(message, sender); // Broadcast if no target
+        }
     } else if (typeVal.toString().compare("login",Qt::CaseInsensitive) == 0) {
         const QJsonValue usernameVal = docObj.value("user");
         if (usernameVal.isNull() || !usernameVal.isString()) {

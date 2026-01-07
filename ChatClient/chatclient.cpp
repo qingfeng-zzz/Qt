@@ -52,7 +52,7 @@ void ChatClient::onReadyRead()
     }
 }
 
-void ChatClient::sendMessage(const QString &text, const QString &type)
+void ChatClient::sendMessage(const QString &text, const QString &type, const QString &target)
 {
     if (m_clientSocket->state() != QAbstractSocket::ConnectedState) {
         return;
@@ -65,6 +65,9 @@ void ChatClient::sendMessage(const QString &text, const QString &type)
         QJsonObject message;
         message["type"] = type;
         message["text"] = text;
+        if (!target.isEmpty()) {
+            message["target"] = target;
+        }
 
         if (type == "login")
             message["user"] = text;

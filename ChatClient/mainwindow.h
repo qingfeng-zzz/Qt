@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include "chatclient.h"
 
+class QRadioButton;
+class QButtonGroup;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -24,7 +27,7 @@ private slots:
     void on_btLeave_clicked();
 
     void connectedToServer();
-    void messageReceived(const QString &sender, const QString &text);
+    void messageReceived(const QString &sender, const QString &text, const QString &target = "");
     void jsonReceived(const QJsonObject &jsonObj);
     void userJoined(const QString &username);
     void userLeft(const QString &username);
@@ -32,7 +35,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-
     ChatClient *m_chatClient;
+    QRadioButton *radioPublic;
+    QRadioButton *radioPrivate;
+    QButtonGroup *radioGroup;
 };
 #endif // MAINWINDOW_H
