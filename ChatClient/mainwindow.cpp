@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->label->setText("匿名多人聊天室"); // Update Title
     ui->stackedWidget->setCurrentWidget(ui->loginpage);
     m_chatClient = new ChatClient(this);
+    m_userId = -1; // 初始化用户ID为-1
 
     connect(m_chatClient, &ChatClient::connected, this, &MainWindow::connectedToServer);
     connect(m_chatClient, &ChatClient::jsonReceived, this, &MainWindow::jsonReceived);
@@ -60,7 +61,6 @@ MainWindow::MainWindow(QWidget *parent)
     // 5. Add Message Record Button
     QPushButton *btMessageRecord = new QPushButton("消息记录", this);
     btMessageRecord->setStyleSheet(btnStyle);
-    ui->horizontalLayout_2->addWidget(btMessageRecord);
     ui->horizontalLayout_2->insertWidget(1, btMessageRecord);
     connect(btMessageRecord, &QPushButton::clicked, this, [this]()
             {
@@ -110,7 +110,12 @@ void MainWindow::on_btSend_clicked()
     if (text.isEmpty())
         return;
 
-    if (radioPrivate->isChecked())
+    ChatDbManager &dbManager = ChatDbManager::getInstance();
+    bool isPrivate = radioPrivate->isChecked();
+    int receiverId = -1;
+    QString target = "";
+
+    if (isPrivate)
     {
         QList<QListWidgetItem *> selected = ui->userList->selectedItems();
         if (selected.isEmpty())
@@ -118,12 +123,26 @@ void MainWindow::on_btSend_clicked()
             QMessageBox::warning(this, "提示", "请选择私聊对象！");
             return;
         }
-        QString target = selected.first()->text();
+        target = selected.first()->text();
         m_chatClient->sendMessage(text, "message", target);
+
+        // 获取接收者ID
+        if (dbManager.connectDb())
+        {
+            receiverId = dbManager.getUserId(target);
+            // 记录发送的私聊消息
+            dbManager.insertMessage(m_userId, receiverId, "private", text);
+        }
     }
     else
     {
         m_chatClient->sendMessage(text, "message");
+
+        // 记录发送的公共消息
+        if (dbManager.connectDb())
+        {
+            dbManager.insertMessage(m_userId, receiverId, "public", text);
+        }
     }
     ui->messageEdit->clear();
 }
@@ -131,6 +150,18 @@ void MainWindow::on_btSend_clicked()
 void MainWindow::connectedToServer()
 {
     ui->stackedWidget->setCurrentWidget(ui->chatpage);
+
+    // 将用户信息插入数据库
+    QString nickname = ui->nameEdit->text();
+    QString ip = ui->ipEdit->text();
+    int port = 1967; // 服务器端口
+
+    ChatDbManager &dbManager = ChatDbManager::getInstance();
+    if (dbManager.connectDb())
+    {
+        m_userId = dbManager.insertUser(nickname, ip, port);
+    }
+
     m_chatClient->sendMessage(ui->nameEdit->text(), "login");
     ui->btSend->setEnabled(true);
 }
@@ -140,6 +171,17 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
     QString timeStr = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
     QString displayHtml;
 
+    // 获取发送者和接收者的ID
+    ChatDbManager &dbManager = ChatDbManager::getInstance();
+    int senderId = dbManager.getUserId(sender);
+    int receiverId = -1; // 默认是公共消息，接收者ID为-1
+
+    // 确保数据库连接
+    if (!dbManager.connectDb())
+    {
+        qDebug() << "Failed to connect to database in messageReceived";
+    }
+
     if (!target.isEmpty())
     {
         // Private Message
@@ -148,20 +190,30 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
         if (sender == myName)
         {
             relation = QString("我→%1").arg(target);
+            // 我发送的私聊消息，接收者是target
+            receiverId = dbManager.getUserId(target);
         }
         else
         {
             relation = QString("%1→我").arg(sender);
+            // 我接收的私聊消息，接收者是我自己
+            receiverId = m_userId;
         }
 
         displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
                           .arg(timeStr, relation, text);
+
+        // 将私聊消息插入数据库
+        dbManager.insertMessage(senderId, receiverId, "private", text);
     }
     else
     {
         // Public Message
         displayHtml = QString("<font color='black'>[公共][%1] %2：%3</font>")
                           .arg(timeStr, sender, text);
+
+        // 将公共消息插入数据库
+        dbManager.insertMessage(senderId, receiverId, "public", text);
     }
 
     ui->textEdit->append(displayHtml);
@@ -252,6 +304,17 @@ void MainWindow::on_btLeave_clicked()
     {
         m_chatClient->sendMessage(ui->nameEdit->text(), "logout");
         m_chatClient->disconnectFromHost();
+    }
+
+    // 更新数据库中用户的在线状态
+    if (m_userId != -1)
+    {
+        ChatDbManager &dbManager = ChatDbManager::getInstance();
+        if (dbManager.connectDb())
+        {
+            dbManager.updateUserLogout(m_userId);
+        }
+        m_userId = -1;
     }
 
     ui->stackedWidget->setCurrentWidget(ui->loginpage);

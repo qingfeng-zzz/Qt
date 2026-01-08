@@ -32,7 +32,10 @@ bool ChatDbManager::connectDb()
     else
     {
         m_db = QSqlDatabase::addDatabase("QSQLITE");
-        m_db.setDatabaseName("./chat_room.db");
+        // 使用绝对路径，确保数据库文件位置正确
+        QString dbPath = QCoreApplication::applicationDirPath() + "/chat_room.db";
+        m_db.setDatabaseName(dbPath);
+        qDebug() << "Database path:" << dbPath;
     }
 
     if (!m_db.open())
