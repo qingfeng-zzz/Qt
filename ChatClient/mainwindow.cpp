@@ -56,21 +56,36 @@ MainWindow::MainWindow(QWidget *parent)
     ui->btSend->setStyleSheet(btnStyle);
     ui->btLeave->setStyleSheet(btnStyle + "background-color: #F56C6C; color: white;");
     ui->horizontalLayout_2->setSpacing(8);
+
+    // 5. Add Message Record Button
+    QPushButton *btMessageRecord = new QPushButton("消息记录", this);
+    btMessageRecord->setStyleSheet(btnStyle);
+    ui->horizontalLayout_2->addWidget(btMessageRecord);
+    ui->horizontalLayout_2->insertWidget(1, btMessageRecord);
+    connect(btMessageRecord, &QPushButton::clicked, this, [this]()
+            {
+                MessageRecordDialog *dialog = new MessageRecordDialog(this);
+                dialog->exec();
+                delete dialog; });
+
+    // 6. Adjust button positions after adding message record button
+    // Make sure all buttons are properly positioned
+    ui->horizontalLayout_2->setStretchFactor(ui->messageEdit, 1);
     // Disable Send initially
     ui->btSend->setEnabled(false);
 
     // Connections
     connect(ui->userList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item)
             {
-        radioPrivate->setChecked(true);
-        ui->messageEdit->setPlaceholderText(QString("私聊@%1：").arg(item->text())); });
+                radioPrivate->setChecked(true);
+                ui->messageEdit->setPlaceholderText(QString("私聊@%1：").arg(item->text())); });
 
     connect(radioPublic, &QRadioButton::toggled, this, [this](bool checked)
             {
-        if(checked) {
-            ui->messageEdit->setPlaceholderText("");
-            ui->userList->clearSelection();
-        } });
+                if(checked) {
+                    ui->messageEdit->setPlaceholderText("");
+                    ui->userList->clearSelection();
+                } });
 }
 
 MainWindow::~MainWindow()
