@@ -2,12 +2,15 @@
 #include <QDataStream>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QDateTime>
+#include <QHostAddress>
 
 ServerWorker::ServerWorker(QObject *parent) : QObject(parent)
 {
     m_serverSocket = new QTcpSocket(this);
     connect(m_serverSocket, &QTcpSocket::readyRead, this, &ServerWorker::onReadyRead);
     connect(m_serverSocket, &QTcpSocket::disconnected, this, &ServerWorker::disconnectedFromClient);
+    m_connectTime = QDateTime::currentSecsSinceEpoch();
 }
 
 bool ServerWorker::setServerSocketDescriptor(qintptr socketDescriptor)
@@ -23,6 +26,16 @@ QString ServerWorker::userName()
 void ServerWorker::setUserName(QString user)
 {
     m_userName = user;
+}
+
+QString ServerWorker::userIp()
+{
+    return m_serverSocket->peerAddress().toString();
+}
+
+qint64 ServerWorker::connectionDuration() const
+{
+    return QDateTime::currentSecsSinceEpoch() - m_connectTime;
 }
 
 void ServerWorker::onReadyRead()

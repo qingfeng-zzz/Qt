@@ -10,6 +10,7 @@ class ChatServer : public QTcpServer
     Q_OBJECT
 public:
     explicit ChatServer(QObject *parent = nullptr);
+    const QVector<ServerWorker*>& clients() const { return m_clients; }
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;

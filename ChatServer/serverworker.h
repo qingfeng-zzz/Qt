@@ -19,14 +19,15 @@ signals:
     void jsonReceived(ServerWorker *sender, const QJsonObject &docObj);
     void disconnectedFromClient();
 
-private:
-    QTcpSocket *m_serverSocket;
-    QString m_userName;
-
 public slots:
     void onReadyRead();
     void sendMessage(const QString &text, const QString &type = "message");
     void sendJson(const QJsonObject &json);
+
+private:
+    QTcpSocket *m_serverSocket;
+    QString m_userName;
+    qint64 m_connectTime; // Timestamp in seconds
 };
 
 #endif // SERVERWORKER_H
