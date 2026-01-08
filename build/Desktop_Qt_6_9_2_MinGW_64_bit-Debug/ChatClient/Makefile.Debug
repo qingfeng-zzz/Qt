@@ -1073,7 +1073,20 @@ debug/mainwindow.o: ../../../ChatClient/mainwindow.cpp ../../../ChatClient/mainw
 		D:/Qt/6.9.2/mingw_64/include/QtCore/quuid.h \
 		D:/Qt/6.9.2/mingw_64/include/QtCore/qjsondocument.h \
 		D:/Qt/6.9.2/mingw_64/include/QtCore/qjsonparseerror.h \
-		D:/Qt/6.9.2/mingw_64/include/QtCore/QJsonValue
+		D:/Qt/6.9.2/mingw_64/include/QtCore/QJsonValue \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/QMessageBox \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qmessagebox.h \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qdialog.h \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qdialogbuttonbox.h \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/QRadioButton \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qradiobutton.h \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/QButtonGroup \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qbuttongroup.h \
+		D:/Qt/6.9.2/mingw_64/include/QtCore/QDateTime \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/QScrollBar \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qscrollbar.h \
+		D:/Qt/6.9.2/mingw_64/include/QtWidgets/qabstractslider.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o debug\mainwindow.o ..\..\..\ChatClient\mainwindow.cpp
 
 debug/moc_chatclient.o: debug/moc_chatclient.cpp 

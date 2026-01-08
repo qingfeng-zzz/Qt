@@ -20,45 +20,53 @@ MainWindow::MainWindow(QWidget *parent)
 
     // --- UI Modifications ---
     
-    // 1. Setup Layouts (Fixing absolute positioning)
+    // 1. Take control of central widget
     QWidget *central = ui->centralwidget;
+    // Clear any existing layout on central
+    if (central->layout()) delete central->layout();
     QVBoxLayout *mainLayout = new QVBoxLayout(central);
     
-    // GroupBox Layout
+    // 2. Handle GroupBox and Log Area
+    // The groupBox is currently child of central. We add it to layout.
+    mainLayout->addWidget(ui->groupBox);
+    
+    // Setup Splitter inside GroupBox
+    // Remove existing layout if any (though .ui usually doesn't set one for groupBox with fixed children)
+    if (ui->groupBox->layout()) delete ui->groupBox->layout();
     QVBoxLayout *groupLayout = new QVBoxLayout(ui->groupBox);
     
-    // 2. Splitter for Client List and Log
     QSplitter *splitter = new QSplitter(Qt::Horizontal, this);
     
+    // Create Client List
     clientListWidget = new QListWidget(this);
     clientListWidget->setFixedWidth(250);
     clientListWidget->setStyleSheet("QListWidget::item:selected { background-color: #E6F7FF; }");
     
+    // Add to splitter
     splitter->addWidget(clientListWidget);
-    splitter->addWidget(ui->logEdit); // Move logEdit into splitter
+    splitter->addWidget(ui->logEdit); // Reparent logEdit to splitter
     
+    // Add splitter to group layout
     groupLayout->addWidget(splitter);
-    
-    mainLayout->addWidget(ui->groupBox);
     
     // 3. Thread Pool Status Bar
     QHBoxLayout *statusLayout = new QHBoxLayout();
     
     QLabel *lbl1 = new QLabel("核心线程数：", this);
-    lbl1->setFont(QFont("Arial", 12));
+    lbl1->setFont(QFont("Microsoft YaHei", 10));
     coreThreadLbl = new QLabel("0", this);
-    coreThreadLbl->setFont(QFont("Arial", 12));
-    coreThreadLbl->setStyleSheet("color: #67C23A;");
+    coreThreadLbl->setFont(QFont("Microsoft YaHei", 10));
+    coreThreadLbl->setStyleSheet("color: #67C23A; font-weight: bold;");
     
     QLabel *lbl2 = new QLabel("活跃线程数：", this);
-    lbl2->setFont(QFont("Arial", 12));
+    lbl2->setFont(QFont("Microsoft YaHei", 10));
     activeThreadLbl = new QLabel("0", this);
-    activeThreadLbl->setFont(QFont("Arial", 12));
+    activeThreadLbl->setFont(QFont("Microsoft YaHei", 10));
     
     QLabel *lbl3 = new QLabel("任务队列：", this);
-    lbl3->setFont(QFont("Arial", 12));
+    lbl3->setFont(QFont("Microsoft YaHei", 10));
     taskQueueLbl = new QLabel("0", this);
-    taskQueueLbl->setFont(QFont("Arial", 12));
+    taskQueueLbl->setFont(QFont("Microsoft YaHei", 10));
     
     statusLayout->addWidget(lbl1);
     statusLayout->addWidget(coreThreadLbl);
@@ -73,31 +81,36 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addLayout(statusLayout);
     
     // 4. Buttons Area
-    QWidget *btnContainer = ui->startStopButton->parentWidget();
-    mainLayout->addWidget(btnContainer);
+    // Find old container to remove it later
+    QWidget *oldBtnContainer = ui->startStopButton->parentWidget();
     
-    // Add new buttons to existing horizontal layout
-    // ui->horizontalLayout is likely available or we access via button parent
-    QHBoxLayout *btnLayout = qobject_cast<QHBoxLayout*>(btnContainer->layout());
-    if (btnLayout) {
-        QPushButton *btnExport = new QPushButton("导出记录", this);
-        QPushButton *btnClear = new QPushButton("清空记录", this);
-        
-        QString btnStyle = "QPushButton { min-width: 80px; min-height: 30px; }";
-        ui->startStopButton->setStyleSheet(btnStyle); // Apply size to existing button too?
-        btnExport->setStyleSheet(btnStyle + "background-color: #409EFF; color: white;");
-        btnClear->setStyleSheet(btnStyle + "background-color: #F56C6C; color: white;");
-        
-        btnLayout->insertWidget(btnLayout->count()-1, btnExport); // Insert before Start/Stop? Or after?
-        // User said "next to Stop Server". 
-        // Existing layout: Spacer, StartButton.
-        // Let's add them before StartButton or after?
-        // "在“停止服务器”按钮旁" -> Beside it.
-        btnLayout->addWidget(btnExport);
-        btnLayout->addWidget(btnClear);
-        
-        connect(btnExport, &QPushButton::clicked, this, &MainWindow::on_exportButton_clicked);
-        connect(btnClear, &QPushButton::clicked, this, &MainWindow::on_clearButton_clicked);
+    QHBoxLayout *bottomLayout = new QHBoxLayout();
+    bottomLayout->addStretch(); 
+    
+    // New Buttons
+    QPushButton *btnExport = new QPushButton("导出记录", this);
+    QPushButton *btnClear = new QPushButton("清空记录", this);
+    
+    QString btnStyle = "QPushButton { min-width: 80px; min-height: 30px; border-radius: 4px; }";
+    ui->startStopButton->setStyleSheet(btnStyle);
+    btnExport->setStyleSheet(btnStyle + "background-color: #409EFF; color: white;");
+    btnClear->setStyleSheet(btnStyle + "background-color: #F56C6C; color: white;");
+    
+    connect(btnExport, &QPushButton::clicked, this, &MainWindow::on_exportButton_clicked);
+    connect(btnClear, &QPushButton::clicked, this, &MainWindow::on_clearButton_clicked);
+    
+    bottomLayout->addWidget(btnExport);
+    bottomLayout->addSpacing(10);
+    bottomLayout->addWidget(btnClear);
+    bottomLayout->addSpacing(10);
+    bottomLayout->addWidget(ui->startStopButton); // Reparent startStopButton
+    
+    mainLayout->addLayout(bottomLayout);
+
+    // Cleanup old container if it exists and is not central
+    if (oldBtnContainer && oldBtnContainer != central) {
+        oldBtnContainer->hide();
+        oldBtnContainer->deleteLater();
     }
 
     // Timer for status updates
