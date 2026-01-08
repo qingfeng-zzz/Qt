@@ -56,17 +56,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->btSend->setStyleSheet(btnStyle);
     ui->btLeave->setStyleSheet(btnStyle + "background-color: #F56C6C; color: white;");
     ui->horizontalLayout_2->setSpacing(8);
-
-    // 5. Add Message Record Button
-    QPushButton *btMessageRecord = new QPushButton("消息记录", this);
-    btMessageRecord->setStyleSheet(btnStyle);
-    ui->horizontalLayout_2->insertWidget(3, btMessageRecord);
-    connect(btMessageRecord, &QPushButton::clicked, this, [this]()
-            {
-        MessageRecordDialog *dialog = new MessageRecordDialog(this);
-        dialog->exec();
-        delete dialog; });
-
     // Disable Send initially
     ui->btSend->setEnabled(false);
 
