@@ -1,5 +1,6 @@
 #include "chatserver.h"
 #include "serverworker.h"
+#include "chatdbmanager.h"
 #include <QJsonValue>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -7,7 +8,7 @@
 ChatServer::ChatServer(QObject *parent):
     QTcpServer(parent)
 {
-
+    ChatDbManager::getInstance().connectDb();
 }
 
 void ChatServer::incomingConnection(qintptr socketDescriptor)
@@ -112,6 +113,7 @@ void ChatServer::jsonReceived(ServerWorker *sender, const QJsonObject &docObj)
 
 void ChatServer::userDisconnected(ServerWorker *sender)
 {
+    ChatDbManager::getInstance().updateUserLogout(sender->userId());
     m_clients.removeAll(sender);
     const QString userName = sender->userName();
     if(!userName.isEmpty()){

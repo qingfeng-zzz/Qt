@@ -13,6 +13,12 @@ public:
 
     QString userName();
     void setUserName(QString user);
+    int userId() const { return m_userId; }
+    void setUserId(int id) { m_userId = id; }
+
+    QString userIp();
+    quint16 userPort();
+    qint64 connectionDuration() const;
 
 signals:
     void logMessage(const QString &msg);
@@ -27,6 +33,7 @@ public slots:
 private:
     QTcpSocket *m_serverSocket;
     QString m_userName;
+    int m_userId = -1;
     qint64 m_connectTime; // Timestamp in seconds
 };
 

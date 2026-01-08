@@ -33,6 +33,11 @@ QString ServerWorker::userIp()
     return m_serverSocket->peerAddress().toString();
 }
 
+quint16 ServerWorker::userPort()
+{
+    return m_serverSocket->peerPort();
+}
+
 qint64 ServerWorker::connectionDuration() const
 {
     return QDateTime::currentSecsSinceEpoch() - m_connectTime;
