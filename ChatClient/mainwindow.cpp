@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->label->setText("匿名多人聊天室"); // Update Title
+    ui->label->setText("匿名多人聊天室");                                                                        // 保持原来的名称
+    ui->label->setStyleSheet("background-color: #009688; color: white; font-weight: bold; border-radius: 2px;"); // 添加美化样式
     ui->stackedWidget->setCurrentWidget(ui->loginpage);
     m_chatClient = new ChatClient(this);
     m_userId = -1; // 初始化用户ID为-1
@@ -24,68 +25,142 @@ MainWindow::MainWindow(QWidget *parent)
 
     // --- UI Modifications ---
 
-    // 1. User List Widget
-    // Rename/Setup existing userList
-    ui->userList->setFixedWidth(200);
-    ui->userList->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->userList->setStyleSheet("QListWidget::item:selected { background-color: #E6F7FF; border: 1px solid #409EFF; color: black; }");
-
-    // 2. Chat Text Edit
-    ui->textEdit->setReadOnly(true);
-    QFont font("Microsoft YaHei", 12);
-    ui->textEdit->setFont(font);
-    // Auto word wrap is default for QTextEdit
-    // Scroll bar is default
-
-    // 3. Radio Buttons
-    radioPublic = new QRadioButton("公共", this);
-    radioPrivate = new QRadioButton("私聊", this);
-    radioPublic->setChecked(true); // Default Public
-
+    // Initialize radio buttons for message type selection
+    radioPublic = new QRadioButton("公共消息", this);
+    radioPrivate = new QRadioButton("私聊消息", this);
     radioGroup = new QButtonGroup(this);
     radioGroup->addButton(radioPublic);
     radioGroup->addButton(radioPrivate);
+    radioPublic->setChecked(true);
+    radioPublic->setStyleSheet("QRadioButton { font-size: 10pt; color: #212121; }");
+    radioPrivate->setStyleSheet("QRadioButton { font-size: 10pt; color: #212121; }");
+    ui->horizontalLayout_2->insertWidget(0, radioPublic);
+    ui->horizontalLayout_2->insertWidget(1, radioPrivate);
 
-    // Insert into layout (horizontalLayout_2)
-    // Layout items: messageEdit (0), btSend (1), btLeave (2) -> after insertion indices shift
-    ui->horizontalLayout_2->insertWidget(1, radioPublic);
-    ui->horizontalLayout_2->insertWidget(2, radioPrivate);
+    // 1. User List Widget
+    ui->userList->setFixedWidth(180);
+    ui->userList->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->userList->setStyleSheet(
+        "QListWidget {"
+        "    border: 1px solid #E0E0E0;"
+        "    border-radius: 3px;"
+        "    background-color: #FFFFFF;"
+        "}"
+        "QListWidget::item {"
+        "    padding: 8px;"
+        "    border-bottom: 1px solid #F5F5F5;"
+        "}"
+        "QListWidget::item:selected {"
+        "    background-color: #E3F2FD;"
+        "    border-left: 4px solid #2196F3;"
+        "    color: #212121;"
+        "}");
+    ui->textEdit->setReadOnly(true);
+    ui->textEdit->setStyleSheet(
+        "QTextEdit {"
+        "    border: 1px solid #E0E0E0;"
+        "    border-radius: 3px;"
+        "    background-color: #FFFFFF;"
+        "    padding: 5px;"
+        "}");
+    QFont font("Microsoft YaHei", 10);
+    ui->textEdit->setFont(font);
 
-    // 4. Button Styles
-    QString btnStyle = "QPushButton { min-width: 80px; min-height: 30px; }";
-    ui->btJoin->setStyleSheet(btnStyle + "background-color: #67C23A; color: white;");
-    ui->btSend->setStyleSheet(btnStyle);
-    ui->btLeave->setStyleSheet(btnStyle + "background-color: #F56C6C; color: white;");
-    ui->horizontalLayout_2->setSpacing(8);
+    // 3. Message Edit
+    ui->messageEdit->setStyleSheet(
+        "QLineEdit {"
+        "    border: 1px solid #E0E0E0;"
+        "    border-radius: 3px;"
+        "    padding: 5px;"
+        "    font-size: 10pt;"
+        "}"
+        "QLineEdit:focus {"
+        "    border-color: #2196F3;"
+        "    background-color: #F5F5F5;"
+        "}");
 
-    // 5. Add Message Record Button
+    // 4. Login Page Elements
+    ui->ipEdit->setStyleSheet(
+        "QLineEdit {"
+        "    border: 1px solid #E0E0E0;"
+        "    border-radius: 3px;"
+        "    padding: 5px;"
+        "    font-size: 10pt;"
+        "    width: 200px;"
+        "}"
+        "QLineEdit:focus {"
+        "    border-color: #2196F3;"
+        "}");
+    ui->nameEdit->setStyleSheet(
+        "QLineEdit {"
+        "    border: 1px solid #E0E0E0;"
+        "    border-radius: 3px;"
+        "    padding: 5px;"
+        "    font-size: 10pt;"
+        "    width: 200px;"
+        "}"
+        "QLineEdit:focus {"
+        "    border-color: #2196F3;"
+        "}");
+    ui->label_2->setStyleSheet("QLabel { font-weight: bold; font-size: 10pt; color: #212121; }");
+    ui->label_3->setStyleSheet("QLabel { font-weight: bold; font-size: 10pt; color: #212121; }");
+
+    // 5. Button Styles
+    QString btnStyle =
+        "QPushButton {"
+        "    min-width: 80px;"
+        "    min-height: 28px;"
+        "    border-radius: 3px;"
+        "    font-size: 10pt;"
+        "    font-weight: bold;"
+        "    border: none;"
+        "    padding: 5px 15px;"
+        "}"
+        "QPushButton:hover {"
+        "    opacity: 0.9;"
+        "}"
+        "QPushButton:pressed {"
+        "    opacity: 0.8;"
+        "}";
+
+    ui->btJoin->setStyleSheet(btnStyle + "QPushButton { background-color: #009688; color: white; }");
+    ui->btSend->setStyleSheet(btnStyle + "QPushButton { background-color: #2196F3; color: white; }");
+    ui->btLeave->setStyleSheet(btnStyle + "QPushButton { background-color: #FF5722; color: white; }");
+
+    // 6. Add Message Record Button
     QPushButton *btMessageRecord = new QPushButton("消息记录", this);
-    btMessageRecord->setStyleSheet(btnStyle);
-    ui->horizontalLayout_2->insertWidget(1, btMessageRecord);
+    btMessageRecord->setStyleSheet(btnStyle + "QPushButton { background-color: #9E9E9E; color: white; }");
+    ui->horizontalLayout_2->insertWidget(2, btMessageRecord);
     connect(btMessageRecord, &QPushButton::clicked, this, [this]()
             {
-                MessageRecordDialog *dialog = new MessageRecordDialog(this);
-                dialog->exec();
-                delete dialog; });
+        MessageRecordDialog *dialog = new MessageRecordDialog(this);
+        dialog->exec();
+        delete dialog; });
 
-    // 6. Adjust button positions after adding message record button
-    // Make sure all buttons are properly positioned
-    ui->horizontalLayout_2->setStretchFactor(ui->messageEdit, 1);
+    // 7. Layout Adjustments
+    ui->horizontalLayout_2->setSpacing(10);
+    ui->horizontalLayout_2->setContentsMargins(5, 5, 5, 5);
+    ui->horizontalLayout->setContentsMargins(5, 5, 5, 5);
+    ui->verticalLayout->setContentsMargins(5, 5, 5, 5);
+    ui->gridLayout->setContentsMargins(10, 10, 10, 10);
+    ui->gridLayout->setSpacing(15);
+
     // Disable Send initially
     ui->btSend->setEnabled(false);
 
     // Connections
     connect(ui->userList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item)
             {
-                radioPrivate->setChecked(true);
-                ui->messageEdit->setPlaceholderText(QString("私聊@%1：").arg(item->text())); });
+        radioPrivate->setChecked(true);
+        ui->messageEdit->setPlaceholderText(QString("私聊@%1：").arg(item->text())); });
 
     connect(radioPublic, &QRadioButton::toggled, this, [this](bool checked)
             {
-                if(checked) {
-                    ui->messageEdit->setPlaceholderText("");
-                    ui->userList->clearSelection();
-                } });
+        if (checked)
+        {
+            ui->messageEdit->setPlaceholderText("");
+            ui->userList->clearSelection();
+        } });
 }
 
 MainWindow::~MainWindow()
