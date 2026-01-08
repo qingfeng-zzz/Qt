@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "messagerecorddialog.h"
 #include <QHostAddress>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -10,8 +11,7 @@
 #include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     ui->label->setText("匿名多人聊天室"); // Update Title
@@ -57,21 +57,31 @@ MainWindow::MainWindow(QWidget *parent)
     ui->btLeave->setStyleSheet(btnStyle + "background-color: #F56C6C; color: white;");
     ui->horizontalLayout_2->setSpacing(8);
 
+    // 5. Add Message Record Button
+    QPushButton *btMessageRecord = new QPushButton("消息记录", this);
+    btMessageRecord->setStyleSheet(btnStyle);
+    ui->horizontalLayout_2->insertWidget(3, btMessageRecord);
+    connect(btMessageRecord, &QPushButton::clicked, this, [this]()
+            {
+        MessageRecordDialog *dialog = new MessageRecordDialog(this);
+        dialog->exec();
+        delete dialog; });
+
     // Disable Send initially
     ui->btSend->setEnabled(false);
 
     // Connections
-    connect(ui->userList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
+    connect(ui->userList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item)
+            {
         radioPrivate->setChecked(true);
-        ui->messageEdit->setPlaceholderText(QString("私聊@%1：").arg(item->text()));
-    });
+        ui->messageEdit->setPlaceholderText(QString("私聊@%1：").arg(item->text())); });
 
-    connect(radioPublic, &QRadioButton::toggled, this, [this](bool checked){
+    connect(radioPublic, &QRadioButton::toggled, this, [this](bool checked)
+            {
         if(checked) {
             ui->messageEdit->setPlaceholderText("");
             ui->userList->clearSelection();
-        }
-    });
+        } });
 }
 
 MainWindow::~MainWindow()
@@ -79,11 +89,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 void MainWindow::on_btJoin_clicked()
 {
     QString nickname = ui->nameEdit->text().trimmed();
-    if(nickname.isEmpty()) {
+    if (nickname.isEmpty())
+    {
         QMessageBox::warning(this, "警告", "昵称不能为空！");
         return;
     }
@@ -93,20 +103,25 @@ void MainWindow::on_btJoin_clicked()
 void MainWindow::on_btSend_clicked()
 {
     QString text = ui->messageEdit->text();
-    if (text.isEmpty()) return;
+    if (text.isEmpty())
+        return;
 
-    if (radioPrivate->isChecked()) {
-        QList<QListWidgetItem*> selected = ui->userList->selectedItems();
-        if (selected.isEmpty()) {
-             QMessageBox::warning(this, "提示", "请选择私聊对象！");
-             return;
+    if (radioPrivate->isChecked())
+    {
+        QList<QListWidgetItem *> selected = ui->userList->selectedItems();
+        if (selected.isEmpty())
+        {
+            QMessageBox::warning(this, "提示", "请选择私聊对象！");
+            return;
         }
         QString target = selected.first()->text();
         m_chatClient->sendMessage(text, "message", target);
-    } else {
+    }
+    else
+    {
         m_chatClient->sendMessage(text, "message");
     }
-    ui->messageEdit->clear()；
+    ui->messageEdit->clear();
 }
 
 void MainWindow::connectedToServer()
@@ -121,22 +136,28 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
     QString timeStr = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
     QString displayHtml;
 
-    if (!target.isEmpty()) {
+    if (!target.isEmpty())
+    {
         // Private Message
         QString relation;
         QString myName = ui->nameEdit->text();
-        if (sender == myName) {
+        if (sender == myName)
+        {
             relation = QString("我→%1").arg(target);
-        } else {
+        }
+        else
+        {
             relation = QString("%1→我").arg(sender);
         }
 
         displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
-                      .arg(timeStr, relation, text);
-    } else {
+                          .arg(timeStr, relation, text);
+    }
+    else
+    {
         // Public Message
         displayHtml = QString("<font color='black'>[公共][%1] %2：%3</font>")
-                      .arg(timeStr, sender, text);
+                          .arg(timeStr, sender, text);
     }
 
     ui->textEdit->append(displayHtml);
@@ -145,41 +166,52 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
 void MainWindow::jsonReceived(const QJsonObject &jsonObj)
 {
     const QJsonValue typeVal = jsonObj.value("type");
-    if (typeVal.isNull() || !typeVal.isString()) {
+    if (typeVal.isNull() || !typeVal.isString())
+    {
         return;
     }
-    if (typeVal.toString().compare("message",Qt::CaseInsensitive) == 0) {
+    if (typeVal.toString().compare("message", Qt::CaseInsensitive) == 0)
+    {
         const QJsonValue textVal = jsonObj.value("text");
         const QJsonValue senderVal = jsonObj.value("sender");
-        if (textVal.isNull() || !textVal.isString()) {
+        if (textVal.isNull() || !textVal.isString())
+        {
             return;
         }
-        if (senderVal.isNull() || !senderVal.isString()) {
+        if (senderVal.isNull() || !senderVal.isString())
+        {
             return;
         }
 
         const QJsonValue targetVal = jsonObj.value("target");
         QString target = "";
-        if (!targetVal.isNull() && targetVal.isString()) {
+        if (!targetVal.isNull() && targetVal.isString())
+        {
             target = targetVal.toString();
         }
 
         messageReceived(senderVal.toString(), textVal.toString().trimmed(), target);
-
-
-    } else if (typeVal.toString().compare("newuser",Qt::CaseInsensitive) == 0) {
+    }
+    else if (typeVal.toString().compare("newuser", Qt::CaseInsensitive) == 0)
+    {
         const QJsonValue usernameVal = jsonObj.value("username");
-        if (usernameVal.isNull() || !usernameVal.isString()) {
+        if (usernameVal.isNull() || !usernameVal.isString())
+        {
             return;
         }
         userJoined(usernameVal.toString());
-    }else if (typeVal.toString().compare("userdisconnected",Qt::CaseInsensitive) == 0) {
+    }
+    else if (typeVal.toString().compare("userdisconnected", Qt::CaseInsensitive) == 0)
+    {
         const QJsonValue usernameVal = jsonObj.value("username");
-        if (usernameVal.isNull() || !usernameVal.isString()) {
+        if (usernameVal.isNull() || !usernameVal.isString())
+        {
             return;
         }
         userLeft(usernameVal.toString());
-    }else if (typeVal.toString().compare("userlist", Qt::CaseInsensitive) == 0) { // user list
+    }
+    else if (typeVal.toString().compare("userlist", Qt::CaseInsensitive) == 0)
+    { // user list
         const QJsonValue userlistVal = jsonObj.value("userlist");
         if (userlistVal.isNull() || !userlistVal.isArray())
             return;
@@ -196,7 +228,8 @@ void MainWindow::userJoined(const QString &username)
 
 void MainWindow::userLeft(const QString &username)
 {
-    for(auto aItem : ui->userList->findItems(username,Qt::MatchExactly)){
+    for (auto aItem : ui->userList->findItems(username, Qt::MatchExactly))
+    {
         qDebug("remove");
         ui->userList->removeItemWidget(aItem);
         delete aItem;
@@ -211,7 +244,8 @@ void MainWindow::userListReceived(const QStringList &list)
 
 void MainWindow::on_btLeave_clicked()
 {
-    if (m_chatClient) {
+    if (m_chatClient)
+    {
         m_chatClient->sendMessage(ui->nameEdit->text(), "logout");
         m_chatClient->disconnectFromHost();
     }
