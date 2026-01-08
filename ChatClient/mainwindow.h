@@ -23,7 +23,19 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_btJoin_clicked();
 
+    void on_btSend_clicked();
+
+    void on_btLeave_clicked();
+
+    void connectedToServer();
+    void messageReceived(const QString &sender, const QString &text, const QString &target = "");
+    void jsonReceived(const QJsonObject &jsonObj);
+    void userJoined(const QString &username);
+    void userLeft(const QString &username);
+    void userListReceived(const QStringList &list);
 
 private:
     Ui::MainWindow *ui;
