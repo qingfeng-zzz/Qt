@@ -15,6 +15,16 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
+// 消息结构体，用于存储所有消息信息
+struct ChatMessage
+{
+    QString sender;
+    QString text;
+    QString target;
+    QString displayHtml;
+    bool isPrivate; // 标记是否为私聊消息
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -36,6 +46,7 @@ private slots:
     void userJoined(const QString &username);
     void userLeft(const QString &username);
     void userListReceived(const QStringList &list);
+    void reloadChatMessages(); // 根据当前选择的消息类型重新加载聊天内容
 
 private:
     Ui::MainWindow *ui;
@@ -43,6 +54,7 @@ private:
     QRadioButton *radioPublic;
     QRadioButton *radioPrivate;
     QButtonGroup *radioGroup;
-    int m_userId; // 用户ID，用于数据库操作
+    int m_userId;                  // 用户ID，用于数据库操作
+    QList<ChatMessage> m_messages; // 存储所有消息的列表
 };
 #endif // MAINWINDOW_H

@@ -37,6 +37,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->horizontalLayout_2->insertWidget(0, radioPublic);
     ui->horizontalLayout_2->insertWidget(1, radioPrivate);
 
+    // 连接单选按钮的信号，当切换消息类型时重新加载聊天内容
+    connect(radioPublic, &QRadioButton::toggled, this, &MainWindow::reloadChatMessages);
+    connect(radioPrivate, &QRadioButton::toggled, this, &MainWindow::reloadChatMessages);
+
     // 1. User List Widget
     ui->userList->setFixedWidth(180);
     ui->userList->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -245,6 +249,7 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
 {
     QString timeStr = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
     QString displayHtml;
+    bool shouldDisplay = true;
 
     // 获取发送者和接收者的ID
     ChatDbManager &dbManager = ChatDbManager::getInstance();
@@ -262,7 +267,6 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
         // Private Message
         QString relation;
         QString myName = ui->nameEdit->text();
-        bool shouldDisplay = false;
         bool isSentByMe = (sender == myName);
 
         if (isSentByMe)
@@ -270,28 +274,23 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
             relation = QString("我→%1").arg(target);
             // 我发送的私聊消息，接收者是target
             receiverId = dbManager.getUserId(target);
-            shouldDisplay = true;
         }
         else if (target == myName)
         {
             relation = QString("%1→我").arg(sender);
             // 我接收的私聊消息，接收者是我自己
             receiverId = m_userId;
-            shouldDisplay = true;
-        }
-
-        if (shouldDisplay)
-        {
-            displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
-                              .arg(timeStr, relation, text);
-
-            // 私聊消息已在发送者端记录，接收端不再记录（避免重复记录）
         }
         else
         {
-            // 不是发给我的私聊消息，不显示也不插入数据库
+            // 不是发给我的私聊消息，不显示也不存储
             return;
         }
+
+        displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
+                          .arg(timeStr, relation, text);
+
+        // 私聊消息已在发送者端记录，接收端不再记录（避免重复记录）
     }
     else
     {
@@ -302,7 +301,36 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
         // 公共消息已在发送者端记录，接收端不再记录（避免多客户端重复记录）
     }
 
-    ui->textEdit->append(displayHtml);
+    // 创建消息对象并存储到列表中
+    ChatMessage message;
+    message.sender = sender;
+    message.text = text;
+    message.target = target;
+    message.displayHtml = displayHtml;
+    message.isPrivate = !target.isEmpty();
+    m_messages.append(message);
+
+    // 根据当前选择的消息类型重新加载聊天内容
+    reloadChatMessages();
+}
+
+void MainWindow::reloadChatMessages()
+{
+    // 清空聊天显示
+    ui->textEdit->clear();
+
+    // 获取当前选中的消息类型
+    bool showPrivate = radioPrivate->isChecked();
+    bool showPublic = radioPublic->isChecked();
+
+    // 遍历所有消息，根据选择过滤显示
+    for (const ChatMessage &msg : m_messages)
+    {
+        if ((showPublic && !msg.isPrivate) || (showPrivate && msg.isPrivate))
+        {
+            ui->textEdit->append(msg.displayHtml);
+        }
+    }
 }
 
 void MainWindow::jsonReceived(const QJsonObject &jsonObj)
