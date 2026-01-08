@@ -262,24 +262,36 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
         // Private Message
         QString relation;
         QString myName = ui->nameEdit->text();
-        if (sender == myName)
+        bool shouldDisplay = false;
+        bool isSentByMe = (sender == myName);
+
+        if (isSentByMe)
         {
             relation = QString("我→%1").arg(target);
             // 我发送的私聊消息，接收者是target
             receiverId = dbManager.getUserId(target);
+            shouldDisplay = true;
         }
-        else
+        else if (target == myName)
         {
             relation = QString("%1→我").arg(sender);
             // 我接收的私聊消息，接收者是我自己
             receiverId = m_userId;
+            shouldDisplay = true;
         }
 
-        displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
-                          .arg(timeStr, relation, text);
+        if (shouldDisplay)
+        {
+            displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
+                              .arg(timeStr, relation, text);
 
-        // 将私聊消息插入数据库
-        dbManager.insertMessage(senderId, receiverId, "private", text);
+            // 私聊消息已在发送者端记录，接收端不再记录（避免重复记录）
+        }
+        else
+        {
+            // 不是发给我的私聊消息，不显示也不插入数据库
+            return;
+        }
     }
     else
     {
@@ -287,8 +299,7 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
         displayHtml = QString("<font color='black'>[公共][%1] %2：%3</font>")
                           .arg(timeStr, sender, text);
 
-        // 将公共消息插入数据库
-        dbManager.insertMessage(senderId, receiverId, "public", text);
+        // 公共消息已在发送者端记录，接收端不再记录（避免多客户端重复记录）
     }
 
     ui->textEdit->append(displayHtml);
