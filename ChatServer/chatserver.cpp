@@ -3,6 +3,8 @@
 #include <QJsonValue>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QThreadPool>
+#include <QThread>
 
 ChatServer::ChatServer(QObject *parent) : QTcpServer(parent)
 {
@@ -10,27 +12,33 @@ ChatServer::ChatServer(QObject *parent) : QTcpServer(parent)
 
 void ChatServer::incomingConnection(qintptr socketDescriptor)
 {
-    ServerWorker *worker = new ServerWorker(this);
+    ServerWorker *worker = new ServerWorker();
     if (!worker->setServerSocketDescriptor(socketDescriptor))
     {
         worker->deleteLater();
         return;
     }
 
-    connect(worker, &ServerWorker::logMessage, this, &ChatServer::logMessage);
-    connect(worker, &ServerWorker::jsonReceived, this, &ChatServer::jsonReceived);
+    connect(worker, &ServerWorker::logMessage, this, &ChatServer::logMessage, Qt::QueuedConnection);
+    connect(worker, &ServerWorker::jsonReceived, this, &ChatServer::jsonReceived, Qt::QueuedConnection);
     connect(worker, &ServerWorker::disconnectedFromClient, this,
-            std::bind(&ChatServer::userDisconnected, this, worker));
+            std::bind(&ChatServer::userDisconnected, this, worker), Qt::QueuedConnection);
 
     m_clients.append(worker);
     emit logMessage("新的用户加入聊天室");
+
+    // 将工作任务提交到线程池执行
+    QThreadPool::globalInstance()->start(worker);
 }
 
 void ChatServer::broadcast(const QJsonObject &message, ServerWorker *exclude)
 {
     for (ServerWorker *worker : m_clients)
     {
-        worker->sendJson(message);
+        if (worker != exclude)
+        {
+            worker->sendJson(message);
+        }
     }
 }
 
@@ -139,7 +147,10 @@ void ChatServer::userDisconnected(ServerWorker *sender)
         disconnectedMessage["type"] = "userdisconnected";
         disconnectedMessage["username"] = userName;
         broadcast(disconnectedMessage, nullptr);
-        emit logMessage(userName + "disconnected");
+        emit logMessage(userName + " disconnected");
     }
+
+    // 断开所有连接，然后删除对象
+    sender->disconnectFromClient();
     sender->deleteLater();
 }

@@ -15,7 +15,7 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DUNICODE -D_UNICODE -DWIN32 -DMINGW_HAS_SECURE_API=1 -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_SQL_LIB -DQT_CORE_LIB -DQT_NEEDS_QMAIN
 CFLAGS        = -fno-keep-inline-dllexport -O2 -Wall -Wextra -Wextra $(DEFINES)
-CXXFLAGS      = -fno-keep-inline-dllexport -O2 -Wall -Wextra -Wextra -fexceptions -mthreads $(DEFINES)
+CXXFLAGS      = -fno-keep-inline-dllexport -O2 -std=gnu++1z -Wall -Wextra -Wextra -fexceptions -mthreads $(DEFINES)
 INCPATH       = -I. -I../../../../Qt/6.9.2/mingw_64/include -I../../../../Qt/6.9.2/mingw_64/include/QtWidgets -I../../../../Qt/6.9.2/mingw_64/include/QtGui -I../../../../Qt/6.9.2/mingw_64/include/QtNetwork -I../../../../Qt/6.9.2/mingw_64/include/QtSql -I../../../../Qt/6.9.2/mingw_64/include/QtCore -Irelease -I. -I/include -I../../../../Qt/6.9.2/mingw_64/mkspecs/win32-g++ 
 LINKER      =        g++
 LFLAGS        =        -Wl,-s -Wl,-subsystem,windows -mthreads
@@ -121,7 +121,7 @@ compiler_moc_predefs_make_all: release/moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) release\moc_predefs.h
 release/moc_predefs.h: ../../../../Qt/6.9.2/mingw_64/mkspecs/features/data/dummy.cpp
-	g++ -fno-keep-inline-dllexport -O2 -Wall -Wextra -Wextra -dM -E -o release\moc_predefs.h ..\..\..\..\Qt\6.9.2\mingw_64\mkspecs\features\data\dummy.cpp
+	g++ -fno-keep-inline-dllexport -O2 -std=gnu++1z -Wall -Wextra -Wextra -dM -E -o release\moc_predefs.h ..\..\..\..\Qt\6.9.2\mingw_64\mkspecs\features\data\dummy.cpp
 
 compiler_moc_header_make_all: release/moc_chatserver.cpp release/moc_mainwindow.cpp release/moc_serverworker.cpp release/moc_chatdbmanager.cpp
 compiler_moc_header_clean:
@@ -264,6 +264,8 @@ release/moc_chatserver.cpp: chatserver.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qvarlengtharray.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q23utility.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q20utility.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QRunnable \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qrunnable.h \
 		release/moc_predefs.h \
 		../../../../Qt/6.9.2/mingw_64/bin/moc.exe
 	D:\Qt\6.9.2\mingw_64\bin\moc.exe $(DEFINES) --include "D:/qt作业/Qt/Course design/ChatServer/release/moc_predefs.h" -ID:/Qt/6.9.2/mingw_64/mkspecs/win32-g++ -I"D:/qt作业/Qt/Course design/ChatServer" -ID:/Qt/6.9.2/mingw_64/include -ID:/Qt/6.9.2/mingw_64/include/QtWidgets -ID:/Qt/6.9.2/mingw_64/include/QtGui -ID:/Qt/6.9.2/mingw_64/include/QtNetwork -ID:/Qt/6.9.2/mingw_64/include/QtSql -ID:/Qt/6.9.2/mingw_64/include/QtCore -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -ID:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include chatserver.h -o release\moc_chatserver.cpp
@@ -503,6 +505,7 @@ release/moc_mainwindow.cpp: mainwindow.h \
 		serverworker.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/QTcpSocket \
 		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QRunnable \
 		release/moc_predefs.h \
 		../../../../Qt/6.9.2/mingw_64/bin/moc.exe
 	D:\Qt\6.9.2\mingw_64\bin\moc.exe $(DEFINES) --include "D:/qt作业/Qt/Course design/ChatServer/release/moc_predefs.h" -ID:/Qt/6.9.2/mingw_64/mkspecs/win32-g++ -I"D:/qt作业/Qt/Course design/ChatServer" -ID:/Qt/6.9.2/mingw_64/include -ID:/Qt/6.9.2/mingw_64/include/QtWidgets -ID:/Qt/6.9.2/mingw_64/include/QtGui -ID:/Qt/6.9.2/mingw_64/include/QtNetwork -ID:/Qt/6.9.2/mingw_64/include/QtSql -ID:/Qt/6.9.2/mingw_64/include/QtCore -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -ID:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include mainwindow.h -o release\moc_mainwindow.cpp
@@ -642,6 +645,8 @@ release/moc_serverworker.cpp: serverworker.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qvarlengtharray.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q23utility.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q20utility.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QRunnable \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qrunnable.h \
 		release/moc_predefs.h \
 		../../../../Qt/6.9.2/mingw_64/bin/moc.exe
 	D:\Qt\6.9.2\mingw_64\bin\moc.exe $(DEFINES) --include "D:/qt作业/Qt/Course design/ChatServer/release/moc_predefs.h" -ID:/Qt/6.9.2/mingw_64/mkspecs/win32-g++ -I"D:/qt作业/Qt/Course design/ChatServer" -ID:/Qt/6.9.2/mingw_64/include -ID:/Qt/6.9.2/mingw_64/include/QtWidgets -ID:/Qt/6.9.2/mingw_64/include/QtGui -ID:/Qt/6.9.2/mingw_64/include/QtNetwork -ID:/Qt/6.9.2/mingw_64/include/QtSql -ID:/Qt/6.9.2/mingw_64/include/QtCore -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -ID:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -ID:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include serverworker.h -o release\moc_serverworker.cpp
@@ -953,6 +958,8 @@ release/chatserver.o: chatserver.cpp chatserver.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qvarlengtharray.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q23utility.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q20utility.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QRunnable \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qrunnable.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QJsonValue \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qjsonvalue.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qcborvalue.h \
@@ -969,7 +976,11 @@ release/chatserver.o: chatserver.cpp chatserver.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QJsonObject \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qjsonobject.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QJsonArray \
-		../../../../Qt/6.9.2/mingw_64/include/QtCore/qjsonarray.h
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qjsonarray.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QThreadPool \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qthreadpool.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qthread.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QThread
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\chatserver.o chatserver.cpp
 
 release/main.o: main.cpp mainwindow.h \
@@ -1207,6 +1218,7 @@ release/main.o: main.cpp mainwindow.h \
 		serverworker.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/QTcpSocket \
 		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QRunnable \
 		../../../../Qt/6.9.2/mingw_64/include/QtWidgets/QApplication \
 		../../../../Qt/6.9.2/mingw_64/include/QtWidgets/qapplication.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\main.o main.cpp
@@ -1446,6 +1458,7 @@ release/mainwindow.o: mainwindow.cpp mainwindow.h \
 		serverworker.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/QTcpSocket \
 		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QRunnable \
 		ui_mainwindow.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QVariant \
 		../../../../Qt/6.9.2/mingw_64/include/QtWidgets/QApplication \
@@ -1631,6 +1644,8 @@ release/serverworker.o: serverworker.cpp serverworker.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qvarlengtharray.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q23utility.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/q20utility.h \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QRunnable \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qrunnable.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QDataStream \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QJsonObject \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qjsonobject.h \
@@ -1648,7 +1663,10 @@ release/serverworker.o: serverworker.cpp serverworker.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/qjsonparseerror.h \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QJsonDocument \
 		../../../../Qt/6.9.2/mingw_64/include/QtCore/QDateTime \
-		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/QHostAddress
+		../../../../Qt/6.9.2/mingw_64/include/QtNetwork/QHostAddress \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QEventLoop \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/QThread \
+		../../../../Qt/6.9.2/mingw_64/include/QtCore/qthread.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\serverworker.o serverworker.cpp
 
 release/chatdbmanager.o: chatdbmanager.cpp chatdbmanager.h \

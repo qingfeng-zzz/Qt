@@ -157,14 +157,19 @@ void MainWindow::updateServerStatus()
 {
     // Update Thread Pool Status
     int active = QThreadPool::globalInstance()->activeThreadCount();
-    // Simulate/Mock core threads as 10 (as per requirement logic) or just show config
+    // Core threads as 10 (as per requirement logic)
     int core = 10;
-    // QThreadPool doesn't expose queue size easily.
-    // We'll just show 0 or a mock value if this is purely for UI requirements
-    // Since we aren't explicitly pushing tasks to QThreadPool in this codebase (it uses QTcpServer's own mechanics usually),
-    // the "Task Queue" might always be 0 unless we change ServerWorker to use QThreadPool.
-    // Given the prompt constraints "Initializing thread pool... (Core 10...)", I will assume we just monitor QThreadPool.
+
+    // Calculate queue size: number of clients that are not yet running
     int queue = 0;
+    const auto &clients = m_chatServer->clients();
+    for (ServerWorker *worker : clients)
+    {
+        if (!worker->isRunning())
+        {
+            queue++;
+        }
+    }
 
     coreThreadLbl->setText(QString::number(core));
     activeThreadLbl->setText(QString::number(active));
@@ -181,7 +186,6 @@ void MainWindow::updateServerStatus()
 
     // Update Client List
     clientListWidget->clear();
-    const auto &clients = m_chatServer->clients();
     for (ServerWorker *worker : clients)
     {
         QString ip = worker->userIp();

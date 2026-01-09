@@ -3,13 +3,15 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QRunnable>
 
-class ServerWorker : public QObject
+class ServerWorker : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
     explicit ServerWorker(QObject *parent = nullptr);
     virtual bool setServerSocketDescriptor(qintptr socketDescriptor);
+    void run() override;
 
     QString userName();
     void setUserName(QString user);
@@ -17,6 +19,9 @@ public:
     QString userIp();
     quint16 userPort();
     qint64 connectionDuration() const;
+    QTcpSocket *serverSocket() const;
+    bool isRunning() const;
+    void disconnectFromClient();
 
 signals:
     void logMessage(const QString &msg);
@@ -32,6 +37,8 @@ private:
     QTcpSocket *m_serverSocket;
     QString m_userName;
     qint64 m_connectTime; // Timestamp in seconds
+    qintptr m_socketDescriptor;
+    bool m_isRunning;
 };
 
 #endif // SERVERWORKER_H
