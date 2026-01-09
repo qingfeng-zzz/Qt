@@ -212,6 +212,20 @@ void MainWindow::on_btSend_clicked()
             // 记录发送的私聊消息
             dbManager.insertMessage(m_userId, receiverId, "private", text);
         }
+
+        // 将自己发送的私聊消息添加到聊天列表
+        QString timeStr = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        QString relation = QString("我→%1").arg(target);
+        QString displayHtml = QString("<font color='#409EFF'>[私聊][%1] %2：%3</font>")
+                                  .arg(timeStr, relation, text);
+        ChatMessage message;
+        message.sender = ui->nameEdit->text();
+        message.text = text;
+        message.target = target;
+        message.displayHtml = displayHtml;
+        message.isPrivate = true;
+        m_messages.append(message);
+        reloadChatMessages();
     }
     else
     {
@@ -222,6 +236,19 @@ void MainWindow::on_btSend_clicked()
         {
             dbManager.insertMessage(m_userId, receiverId, "public", text);
         }
+
+        // 将自己发送的公共消息添加到聊天列表
+        QString timeStr = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+        QString displayHtml = QString("<font color='black'>[公共][%1] %2：%3</font>")
+                                  .arg(timeStr, ui->nameEdit->text(), text);
+        ChatMessage message;
+        message.sender = ui->nameEdit->text();
+        message.text = text;
+        message.target = target;
+        message.displayHtml = displayHtml;
+        message.isPrivate = false;
+        m_messages.append(message);
+        reloadChatMessages();
     }
     ui->messageEdit->clear();
 }
@@ -301,17 +328,22 @@ void MainWindow::messageReceived(const QString &sender, const QString &text, con
         // 公共消息已在发送者端记录，接收端不再记录（避免多客户端重复记录）
     }
 
-    // 创建消息对象并存储到列表中
-    ChatMessage message;
-    message.sender = sender;
-    message.text = text;
-    message.target = target;
-    message.displayHtml = displayHtml;
-    message.isPrivate = !target.isEmpty();
-    m_messages.append(message);
+    // 检查是否是自己发送的消息，如果是则不添加（避免重复显示）
+    QString myName = ui->nameEdit->text();
+    if (sender != myName)
+    {
+        // 创建消息对象并存储到列表中
+        ChatMessage message;
+        message.sender = sender;
+        message.text = text;
+        message.target = target;
+        message.displayHtml = displayHtml;
+        message.isPrivate = !target.isEmpty();
+        m_messages.append(message);
 
-    // 根据当前选择的消息类型重新加载聊天内容
-    reloadChatMessages();
+        // 根据当前选择的消息类型重新加载聊天内容
+        reloadChatMessages();
+    }
 }
 
 void MainWindow::reloadChatMessages()

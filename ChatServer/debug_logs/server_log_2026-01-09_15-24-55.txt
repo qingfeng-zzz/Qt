@@ -1,0 +1,8 @@
+[2026-01-09 15:24:55.372] DEBUG: Starting application... (:0, )
+[2026-01-09 15:24:55.408] DEBUG: Creating test TCP server... (:0, )
+[2026-01-09 15:24:55.412] DEBUG: Attempting to listen on "0.0.0.0" : 1967 (:0, )
+[2026-01-09 15:24:55.480] DEBUG: listen() returned: false (:0, )
+[2026-01-09 15:24:55.495] CRITICAL: Test server failed to listen: "The bound address is already in use" (:0, )
+[2026-01-09 15:25:08.779] WARNING: QMetaObject::connectSlotsByName: No matching signal for on_exportButton_clicked() (:0, )
+[2026-01-09 15:25:08.822] WARNING: QMetaObject::connectSlotsByName: No matching signal for on_clearButton_clicked() (:0, )
+[2026-01-09 15:25:13.171] DEBUG: Entering event loop... (:0, )

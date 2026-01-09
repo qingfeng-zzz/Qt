@@ -1,0 +1,10 @@
+release/chatclient.o
+release/main.o
+release/mainwindow.o
+release/messagerecorddialog.o
+release/chatdbmanager.o
+release/qtentrypoint_fix.o
+release/moc_chatclient.o
+release/moc_mainwindow.o
+release/moc_messagerecorddialog.o
+release/moc_chatdbmanager.o

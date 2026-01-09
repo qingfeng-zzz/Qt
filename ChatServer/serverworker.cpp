@@ -156,13 +156,12 @@ void ServerWorker::sendJson(const QJsonObject &json)
 {
     if (!m_serverSocket || m_serverSocket->state() != QAbstractSocket::ConnectedState)
     {
-        emit logMessage("Failed to send json: socket not connected");
+        emit logMessage(QString("Failed to send json: socket not connected or null"));
         return;
     }
     const QByteArray jsonData = QJsonDocument(json).toJson(QJsonDocument::Compact);
     emit logMessage(QLatin1String("Sending to ") + userName() + QLatin1String(" - ") + QString::fromUtf8(jsonData));
     QDataStream socketStream(m_serverSocket);
-    socketStream.setVersion(QDataStream::Qt_5_12); // 使用与接收端相同的版本
+    socketStream.setVersion(QDataStream::Qt_5_12);
     socketStream << jsonData;
-    m_serverSocket->flush(); // 确保数据立即发送
 }

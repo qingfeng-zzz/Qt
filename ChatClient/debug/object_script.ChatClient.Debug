@@ -1,0 +1,10 @@
+debug/chatclient.o
+debug/main.o
+debug/mainwindow.o
+debug/messagerecorddialog.o
+debug/chatdbmanager.o
+debug/qtentrypoint_fix.o
+debug/moc_chatclient.o
+debug/moc_mainwindow.o
+debug/moc_messagerecorddialog.o
+debug/moc_chatdbmanager.o

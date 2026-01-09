@@ -97,7 +97,7 @@ void ChatServer::jsonReceived(ServerWorker *sender, const QJsonObject &docObj)
         }
         else
         {
-            broadcast(message, sender); // Broadcast if no target
+            broadcast(message, nullptr); // Broadcast to all clients including sender
             // 记录公聊消息
             emit logMessage(QString("[公聊] %1: %2").arg(sender->userName(), text));
         }

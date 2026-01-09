@@ -1,0 +1,10 @@
+release/chatserver.o
+release/main.o
+release/mainwindow.o
+release/serverworker.o
+release/chatdbmanager.o
+release/qtentrypoint_fix.o
+release/moc_chatserver.o
+release/moc_mainwindow.o
+release/moc_serverworker.o
+release/moc_chatdbmanager.o
