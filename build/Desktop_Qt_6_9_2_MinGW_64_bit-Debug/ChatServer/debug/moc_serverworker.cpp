@@ -47,12 +47,16 @@ template <> constexpr inline auto ServerWorker::qt_create_metaobjectdata<qt_meta
         "sender",
         "docObj",
         "disconnectedFromClient",
-        "onReadyRead",
+        "sendJsonRequested",
+        "json",
+        "disconnectRequested",
         "sendMessage",
         "text",
         "type",
+        "onReadyRead",
+        "startWork",
         "sendJson",
-        "json"
+        "disconnectFromClient"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -66,20 +70,30 @@ template <> constexpr inline auto ServerWorker::qt_create_metaobjectdata<qt_meta
         }}),
         // Signal 'disconnectedFromClient'
         QtMocHelpers::SignalData<void()>(8, 2, QMC::AccessPublic, QMetaType::Void),
+        // Signal 'sendJsonRequested'
+        QtMocHelpers::SignalData<void(const QJsonObject &)>(9, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QJsonObject, 10 },
+        }}),
+        // Signal 'disconnectRequested'
+        QtMocHelpers::SignalData<void()>(11, 2, QMC::AccessPublic, QMetaType::Void),
+        // Slot 'sendMessage'
+        QtMocHelpers::SlotData<void(const QString &, const QString &)>(12, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 13 }, { QMetaType::QString, 14 },
+        }}),
+        // Slot 'sendMessage'
+        QtMocHelpers::SlotData<void(const QString &)>(12, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
+            { QMetaType::QString, 13 },
+        }}),
         // Slot 'onReadyRead'
-        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPublic, QMetaType::Void),
-        // Slot 'sendMessage'
-        QtMocHelpers::SlotData<void(const QString &, const QString &)>(10, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QString, 11 }, { QMetaType::QString, 12 },
-        }}),
-        // Slot 'sendMessage'
-        QtMocHelpers::SlotData<void(const QString &)>(10, 2, QMC::AccessPublic | QMC::MethodCloned, QMetaType::Void, {{
-            { QMetaType::QString, 11 },
-        }}),
+        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'startWork'
+        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'sendJson'
-        QtMocHelpers::SlotData<void(const QJsonObject &)>(13, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::QJsonObject, 14 },
+        QtMocHelpers::SlotData<void(const QJsonObject &)>(17, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QJsonObject, 10 },
         }}),
+        // Slot 'disconnectFromClient'
+        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -106,10 +120,14 @@ void ServerWorker::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 0: _t->logMessage((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
         case 1: _t->jsonReceived((*reinterpret_cast< std::add_pointer_t<ServerWorker*>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QJsonObject>>(_a[2]))); break;
         case 2: _t->disconnectedFromClient(); break;
-        case 3: _t->onReadyRead(); break;
-        case 4: _t->sendMessage((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
-        case 5: _t->sendMessage((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 6: _t->sendJson((*reinterpret_cast< std::add_pointer_t<QJsonObject>>(_a[1]))); break;
+        case 3: _t->sendJsonRequested((*reinterpret_cast< std::add_pointer_t<QJsonObject>>(_a[1]))); break;
+        case 4: _t->disconnectRequested(); break;
+        case 5: _t->sendMessage((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
+        case 6: _t->sendMessage((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 7: _t->onReadyRead(); break;
+        case 8: _t->startWork(); break;
+        case 9: _t->sendJson((*reinterpret_cast< std::add_pointer_t<QJsonObject>>(_a[1]))); break;
+        case 10: _t->disconnectFromClient(); break;
         default: ;
         }
     }
@@ -132,6 +150,10 @@ void ServerWorker::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
             return;
         if (QtMocHelpers::indexOfMethod<void (ServerWorker::*)()>(_a, &ServerWorker::disconnectedFromClient, 2))
             return;
+        if (QtMocHelpers::indexOfMethod<void (ServerWorker::*)(const QJsonObject & )>(_a, &ServerWorker::sendJsonRequested, 3))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (ServerWorker::*)()>(_a, &ServerWorker::disconnectRequested, 4))
+            return;
     }
 }
 
@@ -145,8 +167,6 @@ void *ServerWorker::qt_metacast(const char *_clname)
     if (!_clname) return nullptr;
     if (!strcmp(_clname, qt_staticMetaObjectStaticContent<qt_meta_tag_ZN12ServerWorkerE_t>.strings))
         return static_cast<void*>(this);
-    if (!strcmp(_clname, "QRunnable"))
-        return static_cast< QRunnable*>(this);
     return QObject::qt_metacast(_clname);
 }
 
@@ -156,14 +176,14 @@ int ServerWorker::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 11;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 11;
     }
     return _id;
 }
@@ -184,5 +204,17 @@ void ServerWorker::jsonReceived(ServerWorker * _t1, const QJsonObject & _t2)
 void ServerWorker::disconnectedFromClient()
 {
     QMetaObject::activate(this, &staticMetaObject, 2, nullptr);
+}
+
+// SIGNAL 3
+void ServerWorker::sendJsonRequested(const QJsonObject & _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 3, nullptr, _t1);
+}
+
+// SIGNAL 4
+void ServerWorker::disconnectRequested()
+{
+    QMetaObject::activate(this, &staticMetaObject, 4, nullptr);
 }
 QT_WARNING_POP

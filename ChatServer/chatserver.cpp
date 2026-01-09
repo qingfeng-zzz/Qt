@@ -27,8 +27,8 @@ void ChatServer::incomingConnection(qintptr socketDescriptor)
     m_clients.append(worker);
     emit logMessage("新的用户加入聊天室");
 
-    // 将工作任务提交到线程池执行
-    QThreadPool::globalInstance()->start(worker);
+    // 启动ServerWorker自己的线程
+    worker->start();
 }
 
 void ChatServer::broadcast(const QJsonObject &message, ServerWorker *exclude)
@@ -37,7 +37,7 @@ void ChatServer::broadcast(const QJsonObject &message, ServerWorker *exclude)
     {
         if (worker != exclude)
         {
-            worker->sendJson(message);
+            emit worker->sendJsonRequested(message);
         }
     }
 }
@@ -81,11 +81,11 @@ void ChatServer::jsonReceived(ServerWorker *sender, const QJsonObject &docObj)
             {
                 if (worker->userName() == targetUser)
                 {
-                    worker->sendJson(message);
+                    emit worker->sendJsonRequested(message);
                     // Also send back to sender so they see their own private message
                     if (worker != sender)
                     {
-                        sender->sendJson(message);
+                        emit sender->sendJsonRequested(message);
                     }
                     // 记录私聊消息
                     emit logMessage(QString("[私聊] %1 -> %2: %3").arg(sender->userName(), targetUser, text));
@@ -133,7 +133,7 @@ void ChatServer::jsonReceived(ServerWorker *sender, const QJsonObject &docObj)
                 userlist.append(worker->userName());
         }
         userlistMessage["userlist"] = userlist;
-        sender->sendJson(userlistMessage);
+        emit sender->sendJsonRequested(userlistMessage);
     }
 }
 
@@ -151,6 +151,6 @@ void ChatServer::userDisconnected(ServerWorker *sender)
     }
 
     // 断开所有连接，然后删除对象
-    sender->disconnectFromClient();
+    emit sender->disconnectRequested();
     sender->deleteLater();
 }

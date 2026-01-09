@@ -4,15 +4,21 @@
 #include <QJsonDocument>
 #include <QDateTime>
 #include <QHostAddress>
-#include <QEventLoop>
 #include <QThread>
-ServerWorker::ServerWorker(QObject *parent) : QObject(parent), QRunnable()
+
+ServerWorker::ServerWorker(QObject *parent) : QObject(parent)
 {
     m_serverSocket = nullptr;
     m_socketDescriptor = 0;
     m_connectTime = QDateTime::currentSecsSinceEpoch();
     m_isRunning = false;
-    setAutoDelete(false); // 不要自动删除，因为我们需要管理对象的生命周期
+    m_thread = new QThread(this);
+    this->moveToThread(m_thread);
+
+    connect(m_thread, &QThread::started, this, &ServerWorker::startWork);
+    connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
+    connect(this, &ServerWorker::sendJsonRequested, this, &ServerWorker::sendJson, Qt::QueuedConnection);
+    connect(this, &ServerWorker::disconnectRequested, this, &ServerWorker::disconnectFromClient, Qt::QueuedConnection);
 }
 
 bool ServerWorker::setServerSocketDescriptor(qintptr socketDescriptor)
@@ -21,14 +27,20 @@ bool ServerWorker::setServerSocketDescriptor(qintptr socketDescriptor)
     return true;
 }
 
-void ServerWorker::run()
+void ServerWorker::start()
+{
+    m_thread->start();
+}
+
+void ServerWorker::startWork()
 {
     if (m_serverSocket)
     {
         delete m_serverSocket;
     }
 
-    m_serverSocket = new QTcpSocket();
+    // 在当前线程中创建socket
+    m_serverSocket = new QTcpSocket(this);
     if (!m_serverSocket->setSocketDescriptor(m_socketDescriptor))
     {
         emit logMessage("Failed to set socket descriptor");
@@ -39,21 +51,11 @@ void ServerWorker::run()
     m_connectTime = QDateTime::currentSecsSinceEpoch();
     m_isRunning = true;
 
-    connect(m_serverSocket, &QTcpSocket::readyRead, this, &ServerWorker::onReadyRead, Qt::DirectConnection);
-    connect(m_serverSocket, &QTcpSocket::disconnected, this, &ServerWorker::disconnectedFromClient, Qt::DirectConnection);
+    // 使用QueuedConnection确保信号在同一线程中处理
+    connect(m_serverSocket, &QTcpSocket::readyRead, this, &ServerWorker::onReadyRead, Qt::QueuedConnection);
+    connect(m_serverSocket, &QTcpSocket::disconnected, this, &ServerWorker::disconnectedFromClient, Qt::QueuedConnection);
 
     emit logMessage("Client connected - Thread: " + QString::number((quintptr)QThread::currentThreadId()));
-
-    // 进入事件循环，处理网络事件
-    QEventLoop eventLoop;
-    connect(m_serverSocket, &QTcpSocket::disconnected, &eventLoop, &QEventLoop::quit);
-    eventLoop.exec();
-
-    m_isRunning = false;
-    m_serverSocket->deleteLater();
-    m_serverSocket = nullptr;
-    emit disconnectedFromClient();
-    emit logMessage("Client disconnected");
 }
 
 QString ServerWorker::userName()
